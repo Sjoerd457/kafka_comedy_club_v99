@@ -1,0 +1,10 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0  # Use the specific version you want
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+-   repo: https://github.com/PyCQA/flake8
+    rev: '6.1.0'  # Use the tag/release you want, e.g., 3.8.4
+    hooks:
+    -   id: flake8
