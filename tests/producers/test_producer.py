@@ -1,5 +1,5 @@
 import json
-from kafka_comedy_club_v99.producer import FakeTTFData
+from producers.example_producer import FakeTTFData
 
 
 def test_fake_ttf_data_generation():
