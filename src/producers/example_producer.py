@@ -11,13 +11,13 @@ Use commands:
 - Check output: docker exec -it cli-tools kafka-console-consumer --bootstrap-server broker0:29092 --topic ttf_data.basic.python
 """
 
-
 import os
 import json
 import random
 from datetime import datetime
 import asyncio
 
+import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from kafka import KafkaProducer, KafkaAdminClient
@@ -96,3 +96,6 @@ async def get_ttf_data():
 async def start_generator():
     """Starts the data generation task."""
     asyncio.create_task(get_ttf_data())
+
+if __name__ == "__main__":
+    uvicorn.run("example_producer:producer_app", host="0.0.0.0", port=8000, reload=True)
