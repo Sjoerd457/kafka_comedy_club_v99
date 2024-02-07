@@ -14,6 +14,7 @@ CASSANDRA_HOST = os.getenv('CASSANDRA_HOST')
 CASSANDRA_PORT = os.getenv('CASSANDRA_PORT')
 KEYSPACE = os.getenv('KEYSPACE')
 TABLE_NAME = os.getenv('TABLE_NAME')
+UPDATE_SECONDS = float(os.environ['UPDATE_SECONDS'])
 
 # Establish connection to Cassandra outside the function
 cluster = Cluster([CASSANDRA_HOST], port=int(CASSANDRA_PORT))
@@ -28,7 +29,7 @@ dash_app.layout = html.Div([
     dcc.Graph(id='real-time-graph'),
     dcc.Interval(
         id='interval-component',
-        interval=1 * 1000,  # in milliseconds
+        interval=UPDATE_SECONDS * 1000,  # in milliseconds
         n_intervals=0
     )
 ])
@@ -91,4 +92,4 @@ def update_graph(n, logger=None):
 if __name__ == '__main__':
     logger = setup_logging()
     logger.info('Dash app started')
-    dash_app.run_server(debug=True, host="0.0.0.0", port=8004)
+    dash_app.run_server(debug=True, host="0.0.0.0", port=8050)

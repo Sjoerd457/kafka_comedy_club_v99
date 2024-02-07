@@ -28,7 +28,7 @@ load_dotenv(verbose=True)
 
 # Configuration variables
 DEBUG = True
-UPDATE_SECONDS = 5  # Interval for generating and sending new data
+UPDATE_SECONDS = float(os.environ['UPDATE_SECONDS'])  # Interval for generating and sending new data
 
 # Initialize FastAPI app
 producer_app = FastAPI()

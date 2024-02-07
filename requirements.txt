@@ -8,3 +8,4 @@ plotly==5.18.0
 python-dotenv==0.20.0
 redis==5.0.1
 numpy==1.21.6
+waitress==2.1.2

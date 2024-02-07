@@ -5,7 +5,10 @@ import multiprocessing
 import logging
 import os
 from dotenv import load_dotenv
+from waitress import serve
+
 from consumers.example_consumer import example_consumer
+from dashboard.example_dashboard import server as dash_server
 
 # Load environment variables from .env file
 load_dotenv()
@@ -32,6 +35,11 @@ def setup_logging():
     return logger
 
 
+def serve_dash():
+    # Use Waitress to serve the Dash app's server
+    serve(dash_server, host='0.0.0.0', port=8050)
+
+
 if __name__ == "__main__":
     # Setup logging
     logger = setup_logging()
@@ -43,3 +51,7 @@ if __name__ == "__main__":
     # Run the Kafka consumer with the logger passed as an argument
     consumer_process = multiprocessing.Process(target=example_consumer, args=(logger,))
     consumer_process.start()  # Start the Kafka consumer process
+
+    # Add a multiprocessing.Process for the Dash dashboard using Waitress
+    dash_process = multiprocessing.Process(target=serve_dash)
+    dash_process.start()
