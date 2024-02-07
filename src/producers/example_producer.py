@@ -5,8 +5,8 @@ It simulates real-time data generation for testing and development purposes. The
 such as open, high, low, and close prices for a fictional ticker. The application uses environment variables for configuration
 and supports dynamic reloading for development. It also includes a mechanism to create the Kafka topic if it does not exist.
 Use commands:
-- Start: uvicorn producer:producer_app --reload
-- If port taken: uvicorn producer:producer_app --reload --port 8001
+- Start: uvicorn example_producer:producer_app --reload
+- If port taken: uvicorn example_producer:producer_app --reload --port 8001
 - Or kill process that uses port: isof -i:8000; kill -9 <ps_id>
 - Check output: docker exec -it cli-tools kafka-console-consumer --bootstrap-server broker0:29092 --topic ttf_data.basic.python
 """

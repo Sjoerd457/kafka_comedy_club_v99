@@ -146,20 +146,6 @@ services:
     networks:
       - localnet
 
-  python-container:
-    build:
-      context: .
-      dockerfile: Dockerfile-python
-    hostname: python-container
-    container_name: python-container
-    depends_on:
-      - cassandra
-    networks:
-      - localnet
-    volumes:
-      - .:/app  # Mount your script folder as a volume
-    command: python kafka_to_cassandra.py  # Replace with your script's command
-
 networks:
   localnet:
     attachable: true
