@@ -26,8 +26,8 @@ from confluent_kafka.serialization import StringSerializer
 from confluent_kafka.schema_registry import SchemaRegistryClient
 from confluent_kafka.schema_registry.avro import AvroSerializer
 
-import schemas_avro
-from fake_financial_data import FakeFinancialData
+import producers.schemas_avro as schemas_avro
+from producers.fake_financial_data import FakeFinancialData
 
 
 logging.basicConfig(level=logging.INFO)
@@ -68,7 +68,7 @@ def make_producer() -> SerializingProducer:
 
     avro_serializer = AvroSerializer(schema_registry_client=schema_reg_client,
                                      schema_str=schemas_avro.ttf_data_value_v1,
-                                     to_dict=lambda obj, ctx: obj.to_dict())
+                                     to_dict=lambda obj, ctx: obj.dict())
 
     return SerializingProducer({
         'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS,
@@ -91,8 +91,11 @@ class FakeFinancialDataCallback:
         if err:
             logger.error(f"Failed to produce {self.ttf_data}", exc_info=err)
         else:
+            # Access Pydantic model data using .dict() method for logging
+            ticker = self.ttf_data.ticker
+            timestamp = self.ttf_data.timestamp
             logger.info(f"""
-                            Successfully produced {self.ttf_data.ticker} at timestamp {self.ttf_data.timestamp}
+                            Successfully produced {ticker} at timestamp {timestamp}
                             to partition {msg.partition()}
                             at offset {msg.offset()}
                         """)
@@ -103,9 +106,11 @@ async def get_ttf_data():
     producer = make_producer()
     while True:
         if DEBUG:
-            data = FakeFinancialData()
+            data = FakeFinancialData.generate()
         producer.produce(topic=KAFKA_TOPIC,
                          key=data.ticker.lower().replace(r's+', '-'),
+                         # Pass Pydantic model instance directly
+                         #
                          value=data,
                          on_delivery=FakeFinancialDataCallback(data))
         producer.flush()
