@@ -1,6 +1,8 @@
 cassandra-driver==3.29.0
+confluent-kafka==2.3.0
 dash==2.15.0
 fastapi[all]== 0.75.1
+fastavro==1.8.0
 httpie==3.2.2
 kafka-python==2.0.2
 pandas==1.3.5
