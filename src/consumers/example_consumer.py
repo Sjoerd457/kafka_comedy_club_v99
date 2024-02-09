@@ -19,29 +19,30 @@ Then run the script using Python.
 """
 
 # Import required libraries
-import logging
-import sys
-from kafka import KafkaConsumer
 import json
-from cassandra.cluster import Cluster
-from cassandra.query import SimpleStatement
+import logging
 import os
 from dotenv import load_dotenv
+from cassandra.query import SimpleStatement
+from kafka import KafkaConsumer
+from utils.configure_logging import configure_logging
+from utils.cassandra_utils import setup_casandra
+
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Configure logging
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # Kafka configuration
 KAFKA_TOPIC: str = os.environ['TOPICS_TTF_DATA_NAME']
 KAFKA_BOOTSTRAP_SERVERS: str = os.environ['BOOTSTRAP_SERVERS']
 
 # Cassandra configuration
-CASSANDRA_HOST: list = [os.environ['CASSANDRA_HOST']]
-CASSANDRA_PORT: str = os.environ['CASSANDRA_PORT']
 KEYSPACE: str = os.getenv('KEYSPACE')
 TABLE_NAME: str = os.getenv('TABLE_NAME')
-
-print(f"Cassandra hosts: {CASSANDRA_HOST}, Keyspace:{KEYSPACE}, Table name:{TABLE_NAME}")
 
 
 def deserialize_value(value: bytes) -> dict:
@@ -49,37 +50,10 @@ def deserialize_value(value: bytes) -> dict:
     return json.loads(value.decode('utf-8'))
 
 
-def create_keyspace_and_table(session: 'Cluster') -> None:
-    """Create keyspace and table in Cassandra if they don't exist."""
-    # Create keyspace
-    session.execute(f"""
-    CREATE KEYSPACE IF NOT EXISTS {KEYSPACE}
-    WITH replication = {{ 'class': 'SimpleStrategy', 'replication_factor': '1' }}
-    """)
-
-    # Use keyspace
-    session.set_keyspace(KEYSPACE)
-
-    # Create table
-    session.execute(f"""
-    CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
-        timestamp text,
-        ticker text,
-        open double,
-        high double,
-        low double,
-        close double,
-        PRIMARY KEY (ticker, timestamp)
-    )
-    """)
-
-
 def example_consumer(logger: 'logging.Logger') -> None:
     """Consume messages from Kafka and insert into Cassandra."""
     # Connect to Cassandra
-    cluster = Cluster(CASSANDRA_HOST, port=CASSANDRA_PORT)
-    session = cluster.connect()
-    create_keyspace_and_table(session)
+    session = setup_casandra()
 
     # Start Kafka consumer
     consumer: 'KafkaConsumer' = KafkaConsumer(
@@ -108,16 +82,5 @@ def example_consumer(logger: 'logging.Logger') -> None:
 
 
 if __name__ == '__main__':
-    # Set up logging to only output to console when running this script directly
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(message)s',
-        handlers=[logging.StreamHandler(sys.stdout)]  # Log to stdout
-    )
-
-    # Get the logger
-    logger = logging.getLogger(__name__)
-    logger.info('example_consumer started')  # Log a message indicating the start of the consumer
-
     # Call example_consumer with the logger
     example_consumer(logger)

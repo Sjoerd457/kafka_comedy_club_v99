@@ -10,12 +10,12 @@ Use commands:
 - Or kill process that uses port: isof -i:8000; kill -9 <ps_id>
 - Check output: docker exec -it cli-tools kafka-console-consumer --bootstrap-server broker0:29092 --topic ttf_data.basic.python
 """
-
-import os
+import asyncio
 import json
+import logging
+import os
 import random
 from datetime import datetime
-import asyncio
 
 import uvicorn
 from dotenv import load_dotenv
@@ -23,8 +23,12 @@ from fastapi import FastAPI
 from kafka import KafkaProducer, KafkaAdminClient
 from kafka.admin import NewTopic
 from kafka.errors import TopicAlreadyExistsError
+from utils.configure_logging import configure_logging
 
 load_dotenv(verbose=True)
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # Configuration variables
 DEBUG = True
@@ -67,7 +71,7 @@ async def startup_event():
                          replication_factor=int(os.environ['TOPICS_TTF_DATA_REPLICAS']))
         client.create_topics([topic])
     except TopicAlreadyExistsError as e:
-        print(e)
+        logger.error(e)
     finally:
         client.close()
 

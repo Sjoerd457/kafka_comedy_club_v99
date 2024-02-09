@@ -1,13 +1,19 @@
 import os
 import logging
-import sys
 from dash import Dash, dcc, html, Input, Output
 import plotly.graph_objs as go
 from cassandra.cluster import Cluster
 from dotenv import load_dotenv
+from utils.configure_logging import configure_logging
+
+# Configure logging
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file
 load_dotenv()
+
+
 KAFKA_TOPIC = os.getenv('TOPICS_ICE_DATA_NAME')
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('BOOTSTRAP_SERVERS')
 CASSANDRA_HOST = os.getenv('CASSANDRA_HOST')
@@ -35,15 +41,7 @@ dash_app.layout = html.Div([
 ])
 
 
-def setup_logging():
-    """Set up the application's logging configuration."""
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                        handlers=[logging.StreamHandler(sys.stdout)])
-    return logging.getLogger(__name__)
-
-
-def get_cassandra_data(logger):
+def get_cassandra_data():
     """
     Retrieves the latest market data from Cassandra.
     Returns a list of dictionaries with 'timestamp' and 'close' keys.
@@ -66,15 +64,12 @@ def get_cassandra_data(logger):
     Output('real-time-graph', 'figure'),
     [Input('interval-component', 'n_intervals')]
 )
-def update_graph(n, logger=None):
+def update_graph(n):
     """
     Callback function to update the graph with data from Cassandra.
     """
-    if logger is None:
-        logger = logging.getLogger(__name__)
-
     logger.info("Updating graph")
-    data_storage = get_cassandra_data(logger)
+    data_storage = get_cassandra_data()
 
     if not data_storage:
         logger.info("Data storage is empty.")
@@ -90,6 +85,5 @@ def update_graph(n, logger=None):
 
 
 if __name__ == '__main__':
-    logger = setup_logging()
     logger.info('Dash app started')
     dash_app.run_server(debug=True, host="0.0.0.0", port=8050)

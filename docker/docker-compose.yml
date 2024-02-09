@@ -1,6 +1,7 @@
 ---
 version: '2'
 services:
+
   zk:
     image: confluentinc/cp-zookeeper:6.1.1
     hostname: zk
@@ -119,14 +120,6 @@ services:
     networks:
       - localnet
 
-  cli-tools:
-    image: confluentinc/cp-kafka:6.1.1
-    container_name: cli-tools
-    entrypoint: "sleep infinity"
-    restart: always
-    networks:
-      - localnet
-
   cassandra:
     image: cassandra:latest
     hostname: cassandra
@@ -143,6 +136,14 @@ services:
     container_name: cassandra-shell
     depends_on:
       - cassandra
+    entrypoint: "sleep infinity"
+    restart: always
+    networks:
+      - localnet
+
+  cli-tools:
+    image: confluentinc/cp-kafka:6.1.1
+    container_name: cli-tools
     entrypoint: "sleep infinity"
     restart: always
     networks:

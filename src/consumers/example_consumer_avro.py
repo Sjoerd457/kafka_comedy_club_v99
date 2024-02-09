@@ -21,9 +21,7 @@ Then run the script using Python.
 # Import required libraries
 import logging
 import os
-import sys
 from dotenv import load_dotenv
-from cassandra.cluster import Cluster
 from cassandra.query import SimpleStatement
 from confluent_kafka import DeserializingConsumer
 from confluent_kafka.schema_registry import SchemaRegistryClient
@@ -31,8 +29,13 @@ from confluent_kafka.schema_registry.avro import AvroDeserializer
 from confluent_kafka.serialization import StringDeserializer
 
 import producers.schemas_avro as schemas_avro
+from utils.configure_logging import configure_logging
+from utils.cassandra_utils import setup_casandra
 # Load environment variables from .env file
 load_dotenv()
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # Kafka configuration
 UPDATE_SECONDS: float = float(os.environ['UPDATE_SECONDS'])  # Interval for generating and sending new data
@@ -44,8 +47,6 @@ KAFKA_REPLICAS: int = int(os.environ['TOPICS_TTF_DATA_AVRO_REPLICAS'])
 KAFKA_SCHEMA_REGISTRY_URL: str = os.environ['SCHEMA_REGISTRY_URL']
 
 # Cassandra configuration
-CASSANDRA_HOST: list = [os.environ['CASSANDRA_HOST']]
-CASSANDRA_PORT: str = os.environ['CASSANDRA_PORT']
 KEYSPACE: str = os.getenv('KEYSPACE')
 TABLE_NAME: str = os.getenv('TABLE_NAME')
 
@@ -66,37 +67,10 @@ def make_consumer() -> DeserializingConsumer:
                                   'enable.auto.commit': 'false'})
 
 
-def create_keyspace_and_table(session: 'Cluster') -> None:
-    """Create keyspace and table in Cassandra if they don't exist."""
-    # Create keyspace
-    session.execute(f"""
-    CREATE KEYSPACE IF NOT EXISTS {KEYSPACE}
-    WITH replication = {{ 'class': 'SimpleStrategy', 'replication_factor': '1' }}
-    """)
-
-    # Use keyspace
-    session.set_keyspace(KEYSPACE)
-
-    # Create table
-    session.execute(f"""
-    CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
-        timestamp text,
-        ticker text,
-        open double,
-        high double,
-        low double,
-        close double,
-        PRIMARY KEY (ticker, timestamp)
-    )
-    """)
-
-
-def example_consumer(logger: 'logging.Logger') -> None:
+def example_consumer_avro(logger: 'logging.Logger') -> None:
     """Consume messages from Kafka and insert into Cassandra."""
     # Connect to Cassandra
-    cluster = Cluster(CASSANDRA_HOST, port=CASSANDRA_PORT)
-    session = cluster.connect()
-    create_keyspace_and_table(session)
+    session = setup_casandra()
 
     # Create consumer
     consumer = make_consumer()
@@ -131,16 +105,6 @@ def example_consumer(logger: 'logging.Logger') -> None:
 
 
 if __name__ == '__main__':
-    # Set up logging to only output to console when running this script directly
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(message)s',
-        handlers=[logging.StreamHandler(sys.stdout)]  # Log to stdout
-    )
-
-    # Get the logger
-    logger = logging.getLogger(__name__)
-    logger.info('example_consumer started')  # Log a message indicating the start of the consumer
 
     # Call example_consumer with the logger
-    example_consumer(logger)
+    example_consumer_avro(logger)

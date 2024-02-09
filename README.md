@@ -21,7 +21,7 @@ Delete all existing docker images and data:
 
 Create virtual environment
 ```
-python3 -m venv venv
+python3.11 -m venv venv
 ```
 
 Activate and install package localy, also installs requirements.
@@ -212,13 +212,20 @@ docker exec -it cli-tools kafka-console-consumer --bootstrap-server broker0:2909
 
 The messages will look like:
 
-
+☺&2024-02-09 10:41:32▬%TFM 1!-ICN���(\�]@=
+ףp]^@H�z¶�g\@q=
+ףp\@
+☺&2024-02-09 10:41:32▬%TFM 1!-ICN{¶�G�ZY@q=
+ף[@�p=
+��V@R�▲���Y@
 
 Start a Kafka Avro console consumer using Docker to consume messages from a specific Kafka topic and deserialize them using Avro schemas managed by the Confluent Schema Registry.
 ```
 docker exec -it schema-registry kafka-avro-console-consumer --bootstrap-server broker0:29092 --topic ttf_data.avro.python --property "schema.registry.url=http://localhost:8081" --from-beginning
 
 ```
+
+The message will now be displayed correctly.
 
 # Todo
 

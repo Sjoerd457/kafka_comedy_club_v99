@@ -28,12 +28,12 @@ from confluent_kafka.schema_registry.avro import AvroSerializer
 
 import producers.schemas_avro as schemas_avro
 from producers.fake_financial_data import FakeFinancialData
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+from utils.configure_logging import configure_logging
 
 load_dotenv(verbose=True)
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # Configuration variables
 DEBUG = True
