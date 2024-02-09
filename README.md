@@ -125,7 +125,7 @@ The sink connector needs to be instructed to start using the a JASON-file. See t
 
 To start the connector:
 ```
-http PUT :8083/connectors/cassandra-sink-connector/config @cassandra-sink-connector.json -b
+http PUT :8083/connectors/cassandra-sink-connector/config @./src/connectors/cassandra-sink-connector.json -b
 ```
 
 To check the status:
@@ -137,10 +137,6 @@ Or to delete the workers:
 ```
 http DELETE :8083/connectors/<name> -b
 ```
-
-Morgen:
-
-
 
 # Schema registry
 
