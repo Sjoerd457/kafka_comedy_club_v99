@@ -38,7 +38,7 @@ load_dotenv(verbose=True)
 # Configuration variables
 DEBUG = True
 UPDATE_SECONDS: float = float(os.environ['UPDATE_SECONDS'])  # Interval for generating and sending new data
-KAFKA_TOPIC: str = os.environ['TOPICS_TTF_DATA_NAME']
+KAFKA_TOPIC: str = os.environ['TOPICS_TTF_DATA_AVRO_NAME']
 KAFKA_BOOTSTRAP_SERVERS: str = os.environ['BOOTSTRAP_SERVERS']
 KAFKA_PARTITIONS: int = int(os.environ['TOPICS_TTF_DATA_AVRO_PARTITIONS'])
 KAFKA_REPLICAS: int = int(os.environ['TOPICS_TTF_DATA_AVRO_REPLICAS'])

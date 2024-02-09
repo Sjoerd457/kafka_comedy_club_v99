@@ -1,0 +1,17 @@
+{
+  "name": "cassandra-sink-connector",
+  "connector.class": "com.datastax.oss.kafka.sink.CassandraSinkConnector",
+  "tasks.max": "1",
+  "topics": "ttf_data.avro.python",
+  "contactPoints": "cassandra",
+  "port": 9042,
+  "loadBalancing.localDc": "datacenter1",
+  "keyspace": "realtime_data",
+  "topic.ttf_data.avro.python.realtime_data.market_data.mapping": "timestamp=value.timestamp, ticker=value.ticker, open=value.open, high=value.high, low=value.low, close=value.close",
+  "topic.ttf_data.avro.python.realtime_data.market_data.consistencyLevel": "LOCAL_QUORUM",
+  "schema.registry.url": "http://localhost:8081",
+  "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+  "key.converter.schemas.enable": "false",
+  "value.converter": "io.confluent.connect.avro.AvroConverter",
+  "value.converter.schema.registry.url": "http://schema-registry:8081"
+}

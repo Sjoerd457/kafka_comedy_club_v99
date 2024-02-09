@@ -81,10 +81,6 @@ def example_consumer(logger: 'logging.Logger') -> None:
     session = cluster.connect()
     create_keyspace_and_table(session)
 
-    # Configure logging to use the provided logger
-    logging.basicConfig(level=logging.INFO, handlers=[logging.FileHandler('logs/app.log')])
-    logging.getLogger(__name__).info('example_consumer started')  # Log a message indicating the start of the consumer
-
     # Start Kafka consumer
     consumer: 'KafkaConsumer' = KafkaConsumer(
         KAFKA_TOPIC,
