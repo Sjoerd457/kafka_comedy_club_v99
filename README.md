@@ -89,6 +89,140 @@ The Docker Compose file orchestrates a development environment featuring Apache 
 
 - All services are connected via a custom Docker network named `localnet`, facilitating seamless internal communication while isolating the setup from the host network.
 
+# Sink Connector
+
+This project uses the DataStax Sink Connector for Apache Cassandra.
+
+https://www.confluent.io/hub/datastax/kafka-connect-cassandra-sink
+
+To interact with the connect cluster, use the REST api:
+
+```
+http :8083/connector-plugins -b
+```
+
+The sink connector needs to be instructed to start using the a JASON-file. See the casssandra-sink-connector.json file as example below.
+
+```json
+{
+  "name": "cassandra-sink-connector",
+  "connector.class": "com.datastax.oss.kafka.sink.CassandraSinkConnector",
+  "tasks.max": "1",
+  "topics": "ttf_data.avro.python",
+  "contactPoints": "cassandra",
+  "port": 9042,
+  "loadBalancing.localDc": "datacenter1",
+  "keyspace": "realtime_data",
+  "topic.ttf_data.avro.python.realtime_data.market_data.mapping": "timestamp=value.timestamp, ticker=value.ticker, open=value.open, high=value.high, low=value.low, close=value.close",
+  "topic.ttf_data.avro.python.realtime_data.market_data.consistencyLevel": "LOCAL_QUORUM",
+  "schema.registry.url": "http://localhost:8081",
+  "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+  "key.converter.schemas.enable": "false",
+  "value.converter": "io.confluent.connect.avro.AvroConverter",
+  "value.converter.schema.registry.url": "http://schema-registry:8081"
+}
+```
+
+To start the connector:
+```
+http PUT :8083/connectors/cassandra-sink-connector/config @cassandra-sink-connector.json -b
+```
+
+To check the status:
+```
+http :8083/connector-plugins -b
+```
+
+Or to delete the workers:
+```
+http DELETE :8083/connectors/<name> -b
+```
+
+Morgen:
+
+
+
+# Schema registry
+
+The Confluent Schema Registry is a centralized repository for storing and managing schemas and metadata for Kafka producers and consumers. It ensures that all messages on Kafka topics adhere to a predefined schema, facilitating data compatibility and governance.
+
+![alt text](img/schema_registry.png)
+
+At its core, Schema Registry has two main parts:
+
+- A REST service for validating, storing, and retrieving Avro, JSON Schema, and Protobuf schemas
+- Serializers and deserializers that plug into Apache Kafka clients to handle schema storage and retrieval for Kafka messages across the three formats.
+
+To list available subjects registered to Schema Registry
+```
+http :8081/subjects
+```
+
+
+To list versions of a specific subject
+```
+http :8081/subjects/<schema_name>/versions
+```
+
+
+To fetch the registered subject for a specific version
+```
+http :8081/subjects/<schema_name>/versions/2
+```
+
+
+To fetch a schema by its global unique id
+```
+http :8081/schemas/ids/2
+```
+
+
+To check the schema compatibility mode
+```
+http :8081/config
+```
+
+
+Validation against latest (not compatible)
+```
+http POST :8081/compatibility/subjects/<schema_name>/versions/latest \
+    schema="<schema_string>"
+```
+
+
+Validation (compatible)
+```
+http POST :8081/compatibility/subjects/<schema_name>/versions/latest \
+    schema="<schema_string>"
+```
+
+Register schema
+```
+http POST :8081/subjects/<schema_name>/versions \
+    schema="<schema_string>"
+```
+
+### See the schema in action
+
+First start the example_producer_avro.py:
+```
+python ./src/proucers/example_producer_avro.py
+```
+
+Now first try to read the produced messages without the use of the schema registry:
+```
+docker exec -it cli-tools kafka-console-consumer --bootstrap-server broker0:29092 --topic ttf_data.avro.python --from-beginning
+```
+
+The messages will look like:
+
+
+
+Start a Kafka Avro console consumer using Docker to consume messages from a specific Kafka topic and deserialize them using Avro schemas managed by the Confluent Schema Registry.
+```
+docker exec -it schema-registry kafka-avro-console-consumer --bootstrap-server broker0:29092 --topic ttf_data.avro.python --property "schema.registry.url=http://localhost:8081" --from-beginning
+
+```
 
 # Todo
 
